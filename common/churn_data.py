@@ -57,5 +57,21 @@ def make_churn(n=5000, seed=0):
     return pd.concat([df, dupes]).sample(frac=1, random_state=seed).reset_index(drop=True)
 
 
+def clean_churn(df):
+    """The fixes found during week 3's EDA, as one idempotent function.
+    Drops the leaky `cancellation_reason` column. Does NOT impute (that belongs in a pipeline)."""
+    df = df.drop_duplicates("customer_id").copy()
+    for c in ["plan", "region", "contract"]:
+        df[c] = df[c].astype(str).str.strip().str.lower()
+    df["total_charges"] = pd.to_numeric(df["total_charges"], errors="coerce")
+    df["signup_date"] = pd.to_datetime(df["signup_date"])
+    df["age"] = df["age"].where(df["age"].between(18, 100))
+    df["monthly_charges"] = df["monthly_charges"].where(df["monthly_charges"].between(0, 1000))
+    return df.drop(columns=["cancellation_reason"], errors="ignore").reset_index(drop=True)
+
+
 if __name__ == "__main__":
-    print(make_churn().head())
+    raw = make_churn()
+    clean = clean_churn(raw)
+    print(raw.shape, "->", clean.shape)
+    print(clean.head())

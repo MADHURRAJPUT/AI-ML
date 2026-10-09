@@ -11,7 +11,14 @@ Every week is a folder. Every topic inside a week is a sub-folder with:
   run, break, and re-write yourself.
 
 The last sub-folder of each week holds that week's exercises (or project) and
-fully worked solutions — try them before you open the solutions.
+fully worked solutions — try them before you open the solutions:
+
+```bash
+python week-01-linear-algebra-and-numpy/06-exercises/exercises.py   # checks YOUR code
+python week-01-linear-algebra-and-numpy/06-exercises/solutions.py   # reference
+```
+
+`common/` holds shared helpers (e.g. the messy churn dataset used in weeks 3–6).
 
 ## Roadmap
 
@@ -39,9 +46,15 @@ model on tabular data correctly.
 | 5 | [`week-05-trees-ensembles-and-unsupervised`](week-05-trees-ensembles-and-unsupervised) | build a decision tree, understand forests & boosting, k-means and PCA |
 | 6 | [`week-06-validation-and-kaggle-project`](week-06-validation-and-kaggle-project) | validate without leakage and ship an end-to-end tabular project |
 
+**Builds:** (1) linear & logistic regression from scratch in NumPy —
+[`week-04/02`](week-04-supervised-learning-from-scratch/02-linear-regression-from-scratch),
+[`week-04/03`](week-04-supervised-learning-from-scratch/03-logistic-regression-from-scratch);
+(2) a Kaggle tabular competition end to end —
+[`week-06/05-kaggle-project`](week-06-validation-and-kaggle-project/05-kaggle-project).
+
 **Phase checkpoint:** explain on a whiteboard why cross-entropy is the loss for
 classification and what the gradient of logistic regression is
-(see [`week-06-.../06-phase-1-checkpoint`](week-06-validation-and-kaggle-project/06-phase-1-checkpoint)).
+(see [`week-06/06-phase-1-checkpoint`](week-06-validation-and-kaggle-project/06-phase-1-checkpoint)).
 
 ## Weekly rhythm (≈18 h)
 
@@ -67,8 +80,9 @@ pip install -r requirements.txt
 python week-01-linear-algebra-and-numpy/01-vectors-and-dot-products/vectors.py
 ```
 
-All scripts run on a laptop CPU in seconds. Plots are written to an `outputs/`
-folder next to the script (git-ignored) rather than opened in a window.
+All scripts run on a laptop CPU in seconds (the from-scratch random forest in
+week 5 takes about a minute). Plots are written to an `outputs/` folder next to
+the script (git-ignored) rather than opened in a window.
 
 ## Phase 1 resources
 

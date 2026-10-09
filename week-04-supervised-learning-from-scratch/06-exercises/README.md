@@ -18,7 +18,7 @@ python solutions.py      # reference solutions
 
 ## Mini-project (2 h, put it in your public repo)
 
-On the churn dataset from week 3 (`week-03-.../05-pandas-and-matplotlib/churn_data.py`):
+On the churn dataset from week 3 ([`common/churn_data.py`](../../common/churn_data.py)):
 
 1. Clean it (reuse your `clean(df)` from the week 3 exercise).
 2. One-hot encode `plan`, `contract`, `region`; standardise numerics (fit on train only!).

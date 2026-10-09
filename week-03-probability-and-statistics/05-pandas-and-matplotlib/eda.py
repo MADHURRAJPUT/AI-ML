@@ -1,10 +1,12 @@
 """Week 3.5 — a full EDA workflow with pandas and Matplotlib on a messy churn dataset."""
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from churn_data import make_churn
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))   # repo root, for common/
+from common.churn_data import make_churn  # noqa: E402
 
 OUT = Path(__file__).parent / "outputs"
 OUT.mkdir(exist_ok=True)
