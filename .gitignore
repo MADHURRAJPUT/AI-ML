@@ -6,3 +6,5 @@ outputs/
 data/
 *.csv
 !**/sample_data/*.csv
+runs/
+*.pt
