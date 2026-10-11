@@ -79,19 +79,19 @@ def train_recall(model, T, steps=1500):
 section("The recall task from 11.2: output the first token after T steps (1500 training steps)")
 print(f"{'T':>5s} {'LSTM':>7s} {'1-layer attention':>18s}")
 models = {}
-for T in [20, 50, 200]:
+for T in [20, 50, 100]:
     torch.manual_seed(0); lstm_acc = train_recall(LSTMRecall(), T)
     torch.manual_seed(0); models[T] = AttnRecall(T); attn_acc = train_recall(models[T], T)
     print(f"{T:5d} {lstm_acc:7.3f} {attn_acc:18.3f}", flush=True)
-_, w = models[200](torch.randint(10, (1, 200)), return_weights=True)
-print(f"attention weight from the last position (t=199) onto position 0: {w[0, -1, 0]:.3f} "
-      f"(uniform would be {1 / 200:.3f}) -> it learned to look straight back")
+_, w = models[100](torch.randint(10, (1, 100)), return_weights=True)
+print(f"attention weight from the last position (t=99) onto position 0: {w[0, -1, 0]:.3f} "
+      f"(uniform would be {1 / 100:.3f}) -> it learned to look straight back")
 print("-> path length: attention connects any two positions in ONE step; an RNN needs T steps.")
 
-section("Parallelism: forward-pass time vs sequence length (batch 8, width 256, CPU)")
+section("Sequential steps vs total work: forward pass, batch 8, width 256 (this CPU)")
 lstm = nn.LSTM(256, 256, batch_first=True)
 attn = nn.MultiheadAttention(256, 4, batch_first=True)
-print(f"{'T':>6s} {'LSTM (sequential)':>18s} {'attention (parallel)':>21s} {'attn matrix memory':>19s}")
+print(f"{'T':>6s} {'LSTM: dependent steps':>22s} {'time':>7s} {'attention: dependent steps':>27s} {'time':>7s} {'attn matrix':>12s}")
 for T in [128, 512, 2048]:
     xs = torch.randn(8, T, 256)
     with torch.no_grad():
@@ -99,7 +99,9 @@ for T in [128, 512, 2048]:
         attn(xs, xs, xs, need_weights=False); t0 = time.perf_counter(); attn(xs, xs, xs, need_weights=False)
         t_a = time.perf_counter() - t0
     mem = 8 * 4 * T * T * 4 / 1e6                              # B * heads * T^2 * fp32 bytes
-    print(f"{T:6d} {t_l * 1e3:15.0f} ms {t_a * 1e3:18.0f} ms {mem:15.0f} MB")
-print("-> an RNN must process tokens one after another; attention processes them all at once (a few big")
-print("   matmuls — what GPUs are built for). The price: the T×T attention matrix, O(T²) memory and compute,")
+    print(f"{T:6d} {T:22d} {t_l * 1e3:5.0f}ms {1:27d} {t_a * 1e3:5.0f}ms {mem:9.0f} MB")
+print("-> On a 4-core CPU the LSTM can even be faster: there's little parallel hardware to exploit, and")
+print("   attention does O(T²) work. The win is on GPUs: the LSTM's T dependent steps can't use thousands of")
+print("   cores, while attention is a few big matmuls with no step-to-step dependency — so training on")
+print("   billions of tokens becomes feasible. The price stays: the T×T matrix, O(T²) memory and compute,")
 print("   which is why long context is expensive (Phase 3: KV cache, FlashAttention; Phase 6: serving).")

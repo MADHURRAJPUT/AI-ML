@@ -22,12 +22,14 @@ from model import MODELS  # noqa: E402
 
 def load_image(path):
     """Any image -> (1, 1, 28, 28) float in [0, 1], object bright on a dark background."""
+    import numpy as np
     from PIL import Image, ImageOps
 
     img = ImageOps.grayscale(Image.open(path))
-    img = ImageOps.pad(img, (max(img.size),) * 2, color=255)        # square, keep aspect ratio
+    background = img.getpixel((0, 0))                               # pad with the photo's own background
+    img = ImageOps.pad(img, (max(img.size),) * 2, color=background)  # square, keep aspect ratio
     img = img.resize((28, 28), Image.BILINEAR)
-    x = torch.tensor(list(img.getdata()), dtype=torch.float32).view(1, 1, 28, 28) / 255.0
+    x = torch.from_numpy(np.asarray(img, dtype=np.float32)).view(1, 1, 28, 28) / 255.0
     if x[..., :3, :].mean() > 0.5:                                  # light background -> invert
         x = 1.0 - x
     return x
