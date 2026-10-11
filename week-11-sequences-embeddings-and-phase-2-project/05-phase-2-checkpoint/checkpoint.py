@@ -20,14 +20,12 @@ PICK = ["LR far too high (Adam lr=0.1)", "LR far too low (Adam lr=1e-6)", "SGD l
         "labels shuffled (data bug)", "only 200 training examples", "forgot optimizer.zero_grad()"]
 
 
-def sparkline(values, width=60, lo=None, hi=None):
+def sparkline(values, width=60, lo=0.05, hi=20.0):
+    """Log-scale bars on a SHARED range (0.05 to 20) so curves are comparable; values outside are clipped."""
     chunks = [values[int(i * len(values) / width):int((i + 1) * len(values) / width)] or [values[-1]]
               for i in range(width)]
     pts = [sum(c) / len(c) for c in chunks]
-    pts = [p if math.isfinite(p) else float("inf") for p in pts]
-    finite = [p for p in pts if math.isfinite(p)] or [0.0]
-    lo = min(finite) if lo is None else lo
-    hi = max(finite) if hi is None else hi
+    pts = [min(max(p, lo), hi) if math.isfinite(p) else float("inf") for p in pts]
     out = ""
     for p in pts:
         if not math.isfinite(p):
@@ -44,7 +42,7 @@ def main():
     args = ap.parse_args()
     chosen = [e for e in EXPERIMENTS if e[0] in PICK]
     random.Random(7).shuffle(chosen)
-    print("Train loss (log scale, ✖ = NaN) over 600 steps, and validation loss at the end.")
+    print("Train loss over 600 steps on ONE shared log scale (▁ = 0.05 … █ = 20; ln 10 = 2.30 sits at ▅), ✖ = NaN.")
     print("For each curve write: (1) what you think is broken, (2) how you'd confirm it, (3) the fix.\n")
     for k, (name, kw, note) in enumerate(chosen, 1):
         r = run(name, **kw)
