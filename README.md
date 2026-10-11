@@ -25,8 +25,8 @@ python week-01-linear-algebra-and-numpy/06-exercises/solutions.py   # reference
 | Phase | Weeks | Theme | Status |
 |---|---|---|---|
 | 1 · Math & classical ML | 1–6 | NumPy, linear algebra, calculus, probability, classical ML | ✅ written |
-| 2 · Deep learning | 7–11 | PyTorch, backprop, training dynamics, CNNs | ⏳ next |
-| 3 · Transformers & LLM internals | 12–16 | Tokenisers, attention, GPT from scratch | ⏳ |
+| 2 · Deep learning | 7–11 | PyTorch, backprop, training dynamics, CNNs | ✅ written |
+| 3 · Transformers & LLM internals | 12–16 | Tokenisers, attention, GPT from scratch | ⏳ next |
 | 4 · Building with LLMs | 17–23 | Prompting, RAG, tools, agents, MCP | ⏳ |
 | 5 · Evals, fine-tuning, alignment | 24–28 | Eval harnesses, LoRA/QLoRA, DPO | ⏳ |
 | 6 · LLMOps & production | 29–33 | vLLM, gateways, tracing, cost | ⏳ |
@@ -56,6 +56,34 @@ model on tabular data correctly.
 classification and what the gradient of logistic regression is
 (see [`week-06/06-phase-1-checkpoint`](week-06-validation-and-kaggle-project/06-phase-1-checkpoint)).
 
+## Phase 2 — Deep learning (weeks 7–11)
+
+**Goal:** build, train and debug neural networks in PyTorch, and know why a
+training run diverges.
+
+| Week | Folder | You will be able to… |
+|---|---|---|
+| 7 | [`week-07-neural-networks-from-scratch`](week-07-neural-networks-from-scratch) | build autograd (micrograd) and a NumPy MLP; pick heads and losses |
+| 8 | [`week-08-pytorch-fluency`](week-08-pytorch-fluency) | use tensors, autograd, `nn.Module`, DataLoaders; write a resumable training loop |
+| 9 | [`week-09-training-dynamics`](week-09-training-dynamics) | fix init, normalisation, regularisation, optimisers, memory; read any loss curve |
+| 10 | [`week-10-cnns-and-transfer-learning`](week-10-cnns-and-transfer-learning) | build CNNs from scratch and in PyTorch; apply transfer learning |
+| 11 | [`week-11-sequences-embeddings-and-phase-2-project`](week-11-sequences-embeddings-and-phase-2-project) | learn embeddings; explain RNNs vs attention; ship an evaluated classifier |
+
+**Builds:** micrograd ([`week-07/02`](week-07-neural-networks-from-scratch/02-micrograd-autograd-engine));
+an MLP and a CNN in raw PyTorch, then transfer learning
+([`week-08/05`](week-08-pytorch-fluency/05-the-training-loop),
+[`week-10/03`](week-10-cnns-and-transfer-learning/03-cnn-in-pytorch),
+[`week-10/04`](week-10-cnns-and-transfer-learning/04-transfer-learning));
+a training-debugging log ([`week-09/06`](week-09-training-dynamics/06-training-debugging-log));
+the phase project ([`week-11/04`](week-11-sequences-embeddings-and-phase-2-project/04-phase-2-project)).
+
+**Phase checkpoint:** given a loss curve that plateaus or explodes, name three likely causes
+and the fix for each ([`week-11/05`](week-11-sequences-embeddings-and-phase-2-project/05-phase-2-checkpoint)).
+
+Phase 2 needs PyTorch (`pip install -r requirements.txt`) and downloads MNIST, Fashion-MNIST and
+two small text files into `data/` on first use. Everything runs on a CPU; the longest scripts
+(the CNN, transfer learning and the project) take 5–15 minutes on a laptop, seconds on a GPU.
+
 ## Weekly rhythm (≈18 h)
 
 | Hours | Activity |
@@ -80,11 +108,16 @@ pip install -r requirements.txt
 python week-01-linear-algebra-and-numpy/01-vectors-and-dot-products/vectors.py
 ```
 
-All scripts run on a laptop CPU in seconds (the from-scratch random forest in
-week 5 takes about a minute). Plots are written to an `outputs/` folder next to
+Phase 1 scripts run on a laptop CPU in seconds (the from-scratch random forest in
+week 5 takes about a minute); Phase 2 timings are noted in each lesson. Plots are written to an `outputs/` folder next to
 the script (git-ignored) rather than opened in a window.
 
-## Phase 1 resources
+## Resources
+
+**Phase 2 — primary:** Andrej Karpathy, *Neural Networks: Zero to Hero* (YouTube). Supplementary: fast.ai
+*Practical Deep Learning*; *Dive into Deep Learning* (d2l.ai); Stanford CS231n notes.
+
+**Phase 1 resources**
 
 - **Primary:** *Mathematics for Machine Learning* — Deisenroth, Faisal, Ong (free PDF, mml-book.github.io)
 - 3Blue1Brown — *Essence of Linear Algebra* and *Essence of Calculus*

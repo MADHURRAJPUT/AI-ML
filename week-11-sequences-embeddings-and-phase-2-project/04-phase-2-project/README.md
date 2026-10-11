@@ -19,14 +19,34 @@ evaluation that goes beyond accuracy, an error analysis, and a demo.
 ## Run it
 
 ```bash
-python train.py --model mlp                     # baseline (~2 min on CPU)
-python train.py                                 # SmallResNet (~10 min on CPU, ~1 min on a GPU)
+python train.py --model mlp                     # baseline (~2-10 min on CPU)
+python train.py                                 # SmallResNet (~15 min on CPU, ~1 min on a GPU)
 python evaluate.py --run resnet-fashion --compare mlp-fashion
 python predict.py --run resnet-fashion --demo
 python predict.py --run resnet-fashion my_sneaker_photo.jpg
 ```
 
-REFERENCE_RESULTS
+## Reference results (8 epochs each, laptop CPU, default settings incl. augmentation)
+
+| run | params | test accuracy (95 % CI) | test NLL | ECE |
+|---|---|---|---|---|
+| `mlp-fashion` | 535,818 | 0.8653 (0.858–0.872) | 0.403 | 0.047 |
+| `resnet-fashion` | 308,074 | **0.9134** (0.908–0.919) | **0.264** | **0.029** |
+
+McNemar test, ResNet vs MLP on the same 10 000 test images: ResNet right / MLP
+wrong on 743, the reverse on 262 → χ² = 230, a decisive difference. The ResNet
+is also better calibrated. Hardest class: **Shirt** (recall 0.72), confused
+with Coat, T-shirt and Pullover.
+
+**Notice the gap you have to explain.** Week 10.3's plain CNN reached 0.929
+in 6 epochs *without* augmentation; this ResNet *with* augmentation reaches
+0.913 in 8, and its validation accuracy was still climbing at the last epoch
+(0.917 → 0.920). Likewise this MLP (0.865) is below week 8's (0.895), which had
+no augmentation. Augmentation makes the task harder and needs a longer
+schedule to pay off (week 9.3). **Your first experiment:** run
+`--no-augment`, then 20 epochs with augmentation, and find out which wins here.
+
+Each epoch takes ~100 s for the ResNet on a 4-core CPU (seconds on a GPU).
 
 ## Your tasks (≈ 6 h)
 
