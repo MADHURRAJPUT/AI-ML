@@ -56,12 +56,15 @@ class LSTMRecall(nn.Module):
     def __init__(self, d=64):
         super().__init__()
         self.emb, self.rnn, self.out = nn.Embedding(10, d), nn.LSTM(d, d, batch_first=True), nn.Linear(d, 10)
+        with torch.no_grad():                           # the best LSTM setting from 11.2 (forget bias 2)
+            for b in [self.rnn.bias_ih_l0, self.rnn.bias_hh_l0]:
+                b[d:2 * d].fill_(1.0)
 
     def forward(self, x):
         return self.out(self.rnn(self.emb(x))[0][:, -1])
 
 
-def train_recall(model, T, steps=600):
+def train_recall(model, T, steps=1500):
     torch.manual_seed(0)
     opt = torch.optim.Adam(model.parameters(), lr=3e-3)
     for _ in range(steps):
@@ -73,13 +76,13 @@ def train_recall(model, T, steps=600):
         return (model(x).argmax(1) == x[:, 0]).float().mean().item()
 
 
-section("The recall task from 11.2: output the first token after T steps (600 training steps)")
+section("The recall task from 11.2: output the first token after T steps (1500 training steps)")
 print(f"{'T':>5s} {'LSTM':>7s} {'1-layer attention':>18s}")
 models = {}
 for T in [20, 50, 200]:
     torch.manual_seed(0); lstm_acc = train_recall(LSTMRecall(), T)
     torch.manual_seed(0); models[T] = AttnRecall(T); attn_acc = train_recall(models[T], T)
-    print(f"{T:5d} {lstm_acc:7.3f} {attn_acc:18.3f}")
+    print(f"{T:5d} {lstm_acc:7.3f} {attn_acc:18.3f}", flush=True)
 _, w = models[200](torch.randint(10, (1, 200)), return_weights=True)
 print(f"attention weight from the last position (t=199) onto position 0: {w[0, -1, 0]:.3f} "
       f"(uniform would be {1 / 200:.3f}) -> it learned to look straight back")

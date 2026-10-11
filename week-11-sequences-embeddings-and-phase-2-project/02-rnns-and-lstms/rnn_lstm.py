@@ -139,21 +139,25 @@ section("Long-range memory: output the FIRST token after T steps of distractors"
 
 
 class Recall(nn.Module):
-    def __init__(self, kind, d=64):
+    def __init__(self, kind, d=64, forget_bias=None):
         super().__init__()
         self.emb = nn.Embedding(10, d)
         self.rnn = {"rnn": nn.RNN, "lstm": nn.LSTM}[kind](d, d, batch_first=True)
         self.out = nn.Linear(d, 10)
+        if kind == "lstm" and forget_bias is not None:
+            with torch.no_grad():                      # gates are ordered (input, forget, cell, output)
+                for b in [self.rnn.bias_ih_l0, self.rnn.bias_hh_l0]:
+                    b[d:2 * d].fill_(forget_bias / 2)   # the two biases add up -> forget gate starts ~σ(2)=0.88
 
     def forward(self, x):
         h, _ = self.rnn(self.emb(x))
         return self.out(h[:, -1])
 
 
-def recall_accuracy(kind, T, steps=600):
+def recall_accuracy(kind, T, lr, forget_bias=None, steps=1500):
     torch.manual_seed(0)
-    m = Recall(kind)
-    opt = torch.optim.Adam(m.parameters(), lr=3e-3)
+    m = Recall(kind, forget_bias=forget_bias)
+    opt = torch.optim.Adam(m.parameters(), lr=lr)
     for _ in range(steps):
         x = torch.randint(10, (128, T))
         loss = F.cross_entropy(m(x), x[:, 0])
@@ -163,9 +167,12 @@ def recall_accuracy(kind, T, steps=600):
         return (m(x).argmax(1) == x[:, 0]).float().mean().item()
 
 
-print(f"{'T':>4s} {'vanilla RNN':>12s} {'LSTM':>8s}   (chance = 0.10)")
-for T in [5, 20, 50]:
-    print(f"{T:4d} {recall_accuracy('rnn', T):12.3f} {recall_accuracy('lstm', T):8.3f}")
+print(f"{'T':>4s} {'vanilla RNN':>12s} {'LSTM, default init':>19s} {'LSTM, forget bias 2':>20s}   (chance = 0.10)")
+for T in [10, 20, 50]:
+    print(f"{T:4d} {recall_accuracy('rnn', T, 1e-2):12.3f} {recall_accuracy('lstm', T, 3e-3):19.3f} "
+          f"{recall_accuracy('lstm', T, 3e-3, forget_bias=2.0):20.3f}")
+print("-> the LSTM's memory only shows up once its forget gate starts 'open' (Jozefowicz et al., 2015).")
+print("   Even then, 50 steps is hard: information must survive 50 multiplicative updates. (11.3: attention.)")
 
 section("Why: gradient of the loss w.r.t. each input step, at initialisation (T = 50)")
 for kind in ["rnn", "lstm"]:

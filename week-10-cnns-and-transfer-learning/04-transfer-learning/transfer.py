@@ -1,9 +1,9 @@
 """Week 10.4 build — transfer learning, fully offline.
 
-Source tasks (lots of data):  A) Fashion classes 0-4 (T-shirt, Trouser, Pullover, Dress, Coat)
-                              B) MNIST digits (a more distant domain)
-Target task (little data):    Fashion classes 5-9 (Sandal, Shirt, Sneaker, Bag, Ankle boot),
-                              with only 10 / 50 / 200 labelled images per class.
+Source tasks (lots of data):  A) Fashion classes Trouser, Sandal, Sneaker, Bag, Ankle boot (30k images)
+                              B) MNIST digits (a more distant domain, 30k images)
+Target task (little data):    the 5 CONFUSABLE upper-body classes T-shirt, Pullover, Dress, Coat, Shirt,
+                              with only 5 / 20 / 100 labelled images per class.
 Strategies: train from scratch | linear probe (frozen backbone) | full fine-tune |
             fine-tune with a 10x smaller backbone LR ("discriminative learning rates").
 """
@@ -125,23 +125,23 @@ if __name__ == "__main__":
     X, y = image_tensors("fashion", train=True); X = normalise(X)
     Xte, yte = image_tensors("fashion", train=False); Xte = normalise(Xte)
     Xm, ym = image_tensors("mnist", train=True, limit=30_000); Xm = normalise(Xm)
-    source_classes, target_classes = [0, 1, 2, 3, 4], [5, 6, 7, 8, 9]
+    source_classes, target_classes = [1, 5, 7, 8, 9], [0, 2, 3, 4, 6]
     print("source classes:", [FASHION_CLASSES[c] for c in source_classes])
     print("target classes:", [FASHION_CLASSES[c] for c in target_classes])
 
     section("1. Pretrain source models (cached in runs/ after the first run)")
     Xs, ys = subset(X, y, source_classes)
-    src_fashion = pretrain("fashion0-4", Xs, ys, 5)
+    src_fashion = pretrain("fashion-shoes-bags-trousers", Xs, ys, 5)
     src_mnist = pretrain("mnist", Xm, ym, 10)
     Xte_t, yte_t = subset(Xte, yte, target_classes)
     print(f"target test set: {len(Xte_t):,} images of the 5 unseen classes")
 
     section("2. Target task with little labelled data — test accuracy on the 5 new classes")
     results = {}
-    for per_class in [10, 50, 200]:
+    for per_class in [5, 20, 100]:
         Xt, yt = subset(X, y, target_classes, per_class=per_class, seed=1)
-        epochs = {10: 60, 50: 30, 200: 15}[per_class]          # ~same number of gradient steps
-        for src_name, src in [("Fashion 0-4", src_fashion), ("MNIST", src_mnist)]:
+        epochs = {5: 80, 20: 40, 100: 20}[per_class]          # ~same number of gradient steps
+        for src_name, src in [("Fashion other", src_fashion), ("MNIST", src_mnist)]:
             for strat, model in strategies(src, Xt, yt, epochs).items():
                 if strat == "from scratch" and src_name == "MNIST":
                     continue                                   # same as with the other source
@@ -149,8 +149,7 @@ if __name__ == "__main__":
                 results.setdefault(key, {})[per_class] = accuracy(model, Xte_t, yte_t)
         print(f"  done: {per_class} images per class")
 
-    print(f"\n{'strategy [source]':44s}" + "".join(f"{f'{n}/class':>10s}" for n in [10, 50, 200]))
+    print(f"\n{'strategy [source]':44s}" + "".join(f"{f'{n}/class':>10s}" for n in [5, 20, 100]))
     for key, accs in results.items():
-        print(f"{key:44s}" + "".join(f"{accs[n]:10.3f}" for n in [10, 50, 200]))
-    print("\n-> Pretrained features win most when labels are scarce; the gap shrinks as data grows.")
-    print("   A related source (other clothes) transfers better than a distant one (digits).")
+        print(f"{key:44s}" + "".join(f"{accs[n]:10.3f}" for n in [5, 20, 100]))
+    print("\n(Read the table before believing any story about it — see the README for what it shows.)")
