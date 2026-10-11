@@ -49,3 +49,19 @@ def load_digits_tensors(flatten=True, seed=0):
     tr, te = idx[:cut], idx[cut:]
     t = lambda a: torch.from_numpy(a)
     return t(X[tr]), t(d.target[tr]).long(), t(X[te]), t(d.target[te]).long()
+
+
+def fashion_small(n_train=10_000, n_val=5_000, flatten=True, seed=0, normalize=True):
+    """A fixed small Fashion-MNIST split for quick experiments (week 9+).
+    Returns X_tr, y_tr, X_val, y_val as tensors, standardised with TRAIN statistics."""
+    import torch
+
+    X, y = image_tensors("fashion", train=True, flatten=flatten)
+    g = torch.Generator().manual_seed(seed)
+    perm = torch.randperm(len(X), generator=g)
+    tr, va = perm[:n_train], perm[n_train:n_train + n_val]
+    X_tr, X_va = X[tr], X[va]
+    if normalize:
+        mean, std = X_tr.mean(), X_tr.std()
+        X_tr, X_va = (X_tr - mean) / std, (X_va - mean) / std
+    return X_tr, y[tr], X_va, y[va]
