@@ -106,16 +106,16 @@ class FrozenBackbone(nn.Module):
         return self.m(x)
 
 
-def strategies(source, Xt, yt, epochs):
+def strategies(source, Xt, yt, epochs, seed=0):
     out = {}
-    out["from scratch"] = fit(FashionCNN(n_classes=5), Xt, yt, epochs, 3e-3)
+    out["from scratch"] = fit(FashionCNN(n_classes=5), Xt, yt, epochs, 3e-3, seed=seed)
     probe = FrozenBackbone(new_head(source, 5))
-    out["linear probe (frozen)"] = fit(probe, Xt, yt, epochs, 3e-3,
+    out["linear probe (frozen)"] = fit(probe, Xt, yt, epochs, 3e-3, seed=seed,
                                        param_groups=[{"params": [p for p in probe.parameters() if p.requires_grad],
                                                       "lr": 3e-3}])
-    out["full fine-tune (same LR)"] = fit(new_head(source, 5), Xt, yt, epochs, 3e-3)
+    out["full fine-tune (same LR)"] = fit(new_head(source, 5), Xt, yt, epochs, 3e-3, seed=seed)
     m = new_head(source, 5)
-    out["fine-tune, backbone LR /10"] = fit(m, Xt, yt, epochs, 3e-3,
+    out["fine-tune, backbone LR /10"] = fit(m, Xt, yt, epochs, 3e-3, seed=seed,
                                             param_groups=[{"params": m.features.parameters(), "lr": 3e-4},
                                                           {"params": m.head.parameters(), "lr": 3e-3}])
     return out
@@ -138,18 +138,22 @@ if __name__ == "__main__":
 
     section("2. Target task with little labelled data — test accuracy on the 5 new classes")
     results = {}
+    SEEDS = [1, 2, 3]                                          # different labelled subsets + inits
     for per_class in [5, 20, 100]:
-        Xt, yt = subset(X, y, target_classes, per_class=per_class, seed=1)
         epochs = {5: 80, 20: 40, 100: 20}[per_class]          # ~same number of gradient steps
-        for src_name, src in [("Fashion other", src_fashion), ("MNIST", src_mnist)]:
-            for strat, model in strategies(src, Xt, yt, epochs).items():
-                if strat == "from scratch" and src_name == "MNIST":
-                    continue                                   # same as with the other source
-                key = strat if strat == "from scratch" else f"{strat} [{src_name}]"
-                results.setdefault(key, {})[per_class] = accuracy(model, Xte_t, yte_t)
-        print(f"  done: {per_class} images per class")
+        for seed in SEEDS:
+            Xt, yt = subset(X, y, target_classes, per_class=per_class, seed=seed)
+            for src_name, src in [("Fashion other", src_fashion), ("MNIST", src_mnist)]:
+                for strat, model in strategies(src, Xt, yt, epochs, seed=seed).items():
+                    if strat == "from scratch" and src_name == "MNIST":
+                        continue                               # same as with the other source
+                    key = strat if strat == "from scratch" else f"{strat} [{src_name}]"
+                    results.setdefault(key, {}).setdefault(per_class, []).append(accuracy(model, Xte_t, yte_t))
+        print(f"  done: {per_class} images per class ({len(SEEDS)} seeds)", flush=True)
 
-    print(f"\n{'strategy [source]':44s}" + "".join(f"{f'{n}/class':>10s}" for n in [5, 20, 100]))
+    print(f"\nmean ± std over {len(SEEDS)} seeds")
+    print(f"{'strategy [source]':44s}" + "".join(f"{f'{n}/class':>14s}" for n in [5, 20, 100]))
     for key, accs in results.items():
-        print(f"{key:44s}" + "".join(f"{accs[n]:10.3f}" for n in [5, 20, 100]))
+        row = "".join(f"{torch.tensor(accs[n]).mean():8.3f} ±{torch.tensor(accs[n]).std():.3f}" for n in [5, 20, 100])
+        print(f"{key:44s}{row}")
     print("\n(Read the table before believing any story about it — see the README for what it shows.)")
