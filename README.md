@@ -26,8 +26,8 @@ python week-01-linear-algebra-and-numpy/06-exercises/solutions.py   # reference
 |---|---|---|---|
 | 1 · Math & classical ML | 1–6 | NumPy, linear algebra, calculus, probability, classical ML | ✅ written |
 | 2 · Deep learning | 7–11 | PyTorch, backprop, training dynamics, CNNs | ✅ written |
-| 3 · Transformers & LLM internals | 12–16 | Tokenisers, attention, GPT from scratch | ⏳ next |
-| 4 · Building with LLMs | 17–23 | Prompting, RAG, tools, agents, MCP | ⏳ |
+| 3 · Transformers & LLM internals | 12–16 | Tokenisers, attention, GPT from scratch | ✅ written |
+| 4 · Building with LLMs | 17–23 | Prompting, RAG, tools, agents, MCP | ⏳ next |
 | 5 · Evals, fine-tuning, alignment | 24–28 | Eval harnesses, LoRA/QLoRA, DPO | ⏳ |
 | 6 · LLMOps & production | 29–33 | vLLM, gateways, tracing, cost | ⏳ |
 | 7 · Specialisation | 34–38 | One deep track | ⏳ |
@@ -84,6 +84,35 @@ Phase 2 needs PyTorch (`pip install -r requirements.txt`) and downloads MNIST, F
 two small text files into `data/` on first use. Everything runs on a CPU; the longest scripts
 (the CNN, transfer learning and the project) take 5–15 minutes on a laptop, seconds on a GPU.
 
+## Phase 3 — Transformers & LLM internals (weeks 12–16)
+
+**Goal:** understand an LLM tensor by tensor: tokenise, build and train a GPT,
+follow it through SFT, preference tuning and RL, and serve and inspect open
+models.
+
+| Week | Folder | You will be able to… |
+|---|---|---|
+| 12 | [`week-12-tokenisation`](week-12-tokenisation) | build byte-level BPE with regex splitting and special tokens; explain tokenizer quirks and costs |
+| 13 | [`week-13-attention-and-the-transformer`](week-13-attention-and-the-transformer) | write attention, MHA/GQA, positional encodings (incl. RoPE) and a transformer block from scratch |
+| 14 | [`week-14-build-a-gpt`](week-14-build-a-gpt) | build, train and sample a GPT (char and BPE); implement top-k/top-p and a KV cache |
+| 15 | [`week-15-how-llms-are-made`](week-15-how-llms-are-made) | explain scaling laws; run SFT, DPO and GRPO on your own model; explain MoE |
+| 16 | [`week-16-inference-and-open-models`](week-16-inference-and-open-models) | reason about inference cost; quantise; use Hugging Face; explain ViT/CLIP/VLMs; ship a GPT |
+
+**Builds:** a BPE tokenizer ([`common/bpe.py`](common/bpe.py)); a GPT with KV cache and
+Hugging Face conversion ([`common/gpt.py`](common/gpt.py)); the full post-training pipeline
+on that GPT ([`week-15`](week-15-how-llms-are-made)); a tiny CLIP
+([`week-16/03`](week-16-inference-and-open-models/03-multimodal-models)); the phase project
+([`week-16/04`](week-16-inference-and-open-models/04-phase-3-project)).
+
+**Phase checkpoint:** draw a transformer block from memory; explain why attention is O(n²) and
+what the KV cache does; diagnose five broken GPTs
+([`week-16/05`](week-16-inference-and-open-models/05-phase-3-checkpoint)).
+
+Phase 3 runs on a CPU. Most demos take 1–5 minutes, and the GPT training runs take 10–13
+minutes. Run week 14.2 before weeks 15–16, which load its checkpoint from `runs/` (git-ignored).
+The Hugging Face lessons work offline on our own converted models; `real_models.py` downloads
+real open-weight models on your machine.
+
 ## Weekly rhythm (≈18 h)
 
 | Hours | Activity |
@@ -113,6 +142,10 @@ week 5 takes about a minute); Phase 2 timings are noted in each lesson. Plots ar
 the script (git-ignored) rather than opened in a window.
 
 ## Resources
+
+**Phase 3 — primary:** Karpathy, *Let's build GPT* and *Let's build the GPT Tokenizer*; Sebastian
+Raschka, *Build a Large Language Model (From Scratch)*. Papers: *Attention Is All You Need*, GPT-2,
+Chinchilla, InstructGPT, DPO, DeepSeekMath (GRPO), CLIP.
 
 **Phase 2 — primary:** Andrej Karpathy, *Neural Networks: Zero to Hero* (YouTube). Supplementary: fast.ai
 *Practical Deep Learning*; *Dive into Deep Learning* (d2l.ai); Stanford CS231n notes.
