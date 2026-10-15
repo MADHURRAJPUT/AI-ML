@@ -18,7 +18,7 @@ these blocks into a GPT and train it.
 1. Implement scaled dot-product attention step by step and explain each operation (and the √d).
 2. Implement efficient multi-head attention and verify it against `nn.MultiheadAttention`.
 3. Explain why attention needs position information; implement learned, sinusoidal and rotary (RoPE) encodings.
-4. Assemble a pre-norm transformer block; count its parameters and FLOPs; reproduce GPT-2 small's 124 M parameters.
+4. Assemble a pre-norm transformer block; count its parameters; reproduce GPT-2 small's 124 M parameters.
 5. Explain encoder, decoder and encoder–decoder transformers, cross-attention, and why decoder-only won.
 
 ## Sub-folders
@@ -48,3 +48,13 @@ Need"* (2017). Read it now — after this week every equation will be familiar.
 - [ ] Without positional information, what does a transformer compute on a shuffled sentence?
 - [ ] Parameters of one GPT block with d_model = d: show it's ≈ 12d².
 - [ ] Why are GPT-style models decoder-only rather than encoder–decoder?
+
+## Key results from this week's demos
+
+| demo | finding |
+|---|---|
+| 13.2 | 2 heads trained on "output x[t−1] and x[t−3]" split the work: one head looks 1 back, the other 3 back |
+| 13.3 | first-vs-last task: no positions 0.52 (chance), sinusoidal 0.994, learned 0.999 |
+| 13.4 | 12-layer char LM: with residuals val loss 2.31; without residuals 3.35 (no better than letter frequencies) |
+| 13.4 | our GPT-2 skeleton: 124 439 808 params, exactly the published checkpoint |
+| 13.5 | digit reversal: encoder-decoder and decoder-only both reach 100 % exact match |
