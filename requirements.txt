@@ -5,3 +5,6 @@ scikit-learn>=1.4
 lightgbm>=4.3
 torch>=2.3
 torchvision>=0.18
+regex>=2023.0
+transformers>=4.40
+tiktoken>=0.7
